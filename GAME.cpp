@@ -47,12 +47,23 @@ void draw() {
       if (ColumnIndex == 0 || ColumnIndex == width - 1) {
         cout << field;
       }
+
       if (InternalBoundIndex == SnakeCoordinateY[0] && ColumnIndex == SnakeCoordinateX[0]) {
         cout << SnakeHead;
       } else if (InternalBoundIndex == AppleCoordinateY && ColumnIndex == AppleCoordinateX) {
         cout << apple;
       } else {
+        bool PrintTail = false;
+        for (int TailIndex = 1; TailIndex < CurrentSnakeLen; ++TailIndex) {
+          if (InternalBoundIndex == SnakeCoordinateY[TailIndex] &&
+              ColumnIndex == SnakeCoordinateX[TailIndex]) {
+            PrintTail = true;
+            cout << SnakeTail;
+          }
+        }
+        if (!PrintTail) {
           cout << " ";
+        }
       }
     }
     cout << endl;
@@ -92,6 +103,12 @@ void input() {
 }
 
 void logic() {
+
+  for (int TailIndex = CurrentSnakeLen - 2; TailIndex >= 0; --TailIndex) {
+    SnakeCoordinateX[TailIndex + 1] = SnakeCoordinateX[TailIndex];
+    SnakeCoordinateY[TailIndex + 1] = SnakeCoordinateY[TailIndex];
+  }
+
   switch (CurrentDirection) {
   case UP:
     --SnakeCoordinateY[0];
