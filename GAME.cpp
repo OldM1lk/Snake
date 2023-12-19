@@ -1,119 +1,146 @@
 
 #include <iostream>
-#include <Windows.h>
+#include <conio.h>
 
 using namespace std;
 
-const int width = 17;
-const int height = 10;
-const int MaxLenSnake = (width - 3) * (height - 2);
+bool GameRunning;
 
-int UP = 0;
-int LEFT = 1;
-int DOWN = 2;
-int RIGHT = 3;
+const int width = 20;
+const int height = 20;
+const int MaxLenSnake = (width - 2) * (height - 2);
 
-int SnakeDirection = UP;
+enum SnakeDirection { STOP = 0, UP, LEFT, DOWN, RIGHT };
+SnakeDirection CurrentDirection;
 
-bool GameRunning = true;
-
-char map[] =
-"################\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"################\n";
-
-char snake = '0';
+char field = '#';
+char SnakeHead = '0';
+char SnakeTail = 'o';
 char apple = 'A';
 
 int SnakeCoordinateX[MaxLenSnake] = { 0 };
 int SnakeCoordinateY[MaxLenSnake] = { 0 };
-int SnakeLen = 1;
-int AppleCoordinateX = 1 + (rand() % (width - 3));
-int AppleCoordinateY = 1 + (rand() % (height - 2));
+int AppleCoordinateX, AppleCoordinateY, CurrentSnakeLen;
 
-int main() {
-  SnakeCoordinateX[0] = width / 2;
-  SnakeCoordinateY[0] = height / 2;
+void config() {
+  GameRunning = true;
+  CurrentDirection = STOP;
+  SnakeCoordinateX[0] = (width / 2) - 1;
+  SnakeCoordinateY[0] = (height / 2) - 1;
+  AppleCoordinateX = rand() % width;
+  AppleCoordinateY = rand() % height;
+  CurrentSnakeLen = 1;
+}
 
-  while (GameRunning) {
-    if (GetKeyState('W') & 0x8000) {
-      if (SnakeDirection != DOWN) {
-        SnakeDirection = UP;
+void draw() {
+  system("cls");
+
+  cout << "Score: " << CurrentSnakeLen - 1 << endl;
+
+  for (int UpperBoundIndex = 0; UpperBoundIndex <= width; ++UpperBoundIndex) {
+    cout << field;
+  }
+  cout << endl;
+
+  for (int InternalBoundIndex = 0; InternalBoundIndex < height; ++InternalBoundIndex) {
+    for (int ColumnIndex = 0; ColumnIndex < width; ++ColumnIndex) {
+      if (ColumnIndex == 0 || ColumnIndex == width - 1) {
+        cout << field;
+      }
+      if (InternalBoundIndex == SnakeCoordinateY[0] && ColumnIndex == SnakeCoordinateX[0]) {
+        cout << SnakeHead;
+      } else if (InternalBoundIndex == AppleCoordinateY && ColumnIndex == AppleCoordinateX) {
+        cout << apple;
+      } else {
+          cout << " ";
       }
     }
-    if (GetKeyState('A') & 0x8000) {
-      if (SnakeDirection != RIGHT) {
-        SnakeDirection = LEFT;
+    cout << endl;
+  }
+
+  for (int LowerBoundIndex = 0; LowerBoundIndex <= width; ++LowerBoundIndex) {
+    cout << field;
+  }
+  cout << endl;
+}
+
+void input() {
+  if (_kbhit()) {
+    switch (_getch()) {
+    case 'w':
+      if (CurrentDirection != DOWN) {
+        CurrentDirection = UP;
       }
-    }
-    if (GetKeyState('S') & 0x8000) {
-      if (SnakeDirection != UP) {
-        SnakeDirection = DOWN;
+      break;
+    case 'a':
+      if (CurrentDirection != RIGHT) {
+        CurrentDirection = LEFT;
       }
-    }
-    if (GetKeyState('D') & 0x8000) {
-      if (SnakeDirection != LEFT) {
-        SnakeDirection = RIGHT;
+      break;
+    case 's':
+      if (CurrentDirection != UP) {
+        CurrentDirection = DOWN;
       }
-    }
-
-    Sleep(200);
-
-    if (SnakeCoordinateX[0] == AppleCoordinateX && SnakeCoordinateY[0] == AppleCoordinateY) {
-      ++SnakeLen;
-      AppleCoordinateX = 1 + (rand() % (width - 3));
-      AppleCoordinateY = 1 + (rand() % (height - 2));
-    }
-
-    for (int SnakeMoveIndex = SnakeLen - 2; SnakeMoveIndex >= 0; --SnakeMoveIndex) {
-      SnakeCoordinateX[SnakeMoveIndex + 1] = SnakeCoordinateX[SnakeMoveIndex];
-      SnakeCoordinateY[SnakeMoveIndex + 1] = SnakeCoordinateY[SnakeMoveIndex];
-    }
-
-    if (SnakeDirection == UP) {
-      --SnakeCoordinateY[0];
-    }
-    if (SnakeDirection == LEFT) {
-      --SnakeCoordinateX[0];
-    }
-    if (SnakeDirection == DOWN) {
-      ++SnakeCoordinateY[0];
-    }
-    if (SnakeDirection == RIGHT) {
-      ++SnakeCoordinateX[0];
-    }
-
-    if (SnakeCoordinateX[0] == 0 || SnakeCoordinateY[0] == 0 || SnakeCoordinateX[0] == width - 2 || SnakeCoordinateY[0] == height - 1) {
-      GameRunning = false;
-    }
-
-    for (int SnakeTailIndex = 1; SnakeTailIndex < SnakeLen; ++SnakeTailIndex) {
-      if (SnakeCoordinateX[0] == SnakeCoordinateX[SnakeTailIndex] && SnakeCoordinateY[0] == SnakeCoordinateY[SnakeTailIndex]) {
-        GameRunning = false;
-        SnakeTailIndex = SnakeLen;
+      break;
+    case 'd':
+      if (CurrentDirection != LEFT) {
+        CurrentDirection = RIGHT;
       }
-    }
-
-    system("cls");
-
-    map[AppleCoordinateY * width + AppleCoordinateX] = apple;
-
-    for (int SnakeOutputIndex = 0; SnakeOutputIndex < SnakeLen; ++SnakeOutputIndex) {
-      map[SnakeCoordinateY[SnakeOutputIndex] * width + SnakeCoordinateX[SnakeOutputIndex]] = snake;
-    }
-
-    cout << map;
-
-    for (int SnakeOutputIndex = 0; SnakeOutputIndex < SnakeLen; ++SnakeOutputIndex) {
-      map[SnakeCoordinateY[SnakeOutputIndex] * width + SnakeCoordinateX[SnakeOutputIndex]] = ' ';
+      break;
     }
   }
-  cout << "Score:" << SnakeLen - 1;
+}
+
+void logic() {
+  switch (CurrentDirection) {
+  case UP:
+    --SnakeCoordinateY[0];
+    break;
+  case LEFT:
+    --SnakeCoordinateX[0];
+    break;
+  case DOWN:
+    ++SnakeCoordinateY[0];
+    break;
+  case RIGHT:
+    ++SnakeCoordinateX[0];
+  }
+
+  if (SnakeCoordinateX[0] > width || 
+      SnakeCoordinateX[0] < 0 || 
+      SnakeCoordinateY[0] > height || 
+      SnakeCoordinateY[0] < 0) {
+    GameRunning = false;
+  }
+
+  for (int SnakeLenIndex = 1; SnakeLenIndex < CurrentSnakeLen; ++SnakeLenIndex) {
+    if (SnakeCoordinateX[0] == SnakeCoordinateX[SnakeLenIndex] &&
+        SnakeCoordinateY[0] == SnakeCoordinateY[SnakeLenIndex]) {
+      GameRunning = false;
+      SnakeLenIndex = CurrentSnakeLen;
+    }
+  }
+
+  if (SnakeCoordinateX[0] == AppleCoordinateX && SnakeCoordinateY[0] == AppleCoordinateY) {
+    ++CurrentSnakeLen;
+    AppleCoordinateX = rand() % width;
+    AppleCoordinateY = rand() % height;
+  }
+}
+
+int main() {
+  double time = clock();
+
+  config();
+
+  while (GameRunning) {
+    if ((clock() - time) / CLOCKS_PER_SEC >= 0.25) {
+      time = clock();
+      input();
+      draw();
+      logic();
+    }
+  }
+
+  return 0;
 }
