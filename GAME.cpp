@@ -134,7 +134,7 @@ void logic() {
     if (SnakeCoordinateX[0] == SnakeCoordinateX[SnakeLenIndex] &&
         SnakeCoordinateY[0] == SnakeCoordinateY[SnakeLenIndex]) {
       GameRunning = false;
-      SnakeLenIndex = CurrentSnakeLen;
+      continue;
     }
   }
 
