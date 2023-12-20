@@ -4,7 +4,7 @@
 
 using namespace std;
 
-bool GameRunning;
+bool IsGameRunning;
 
 const int width = 20;
 const int height = 20;
@@ -23,12 +23,13 @@ int SnakeCoordinateY[MaxLenSnake] = { 0 };
 int AppleCoordinateX, AppleCoordinateY, CurrentSnakeLen;
 
 void config() {
-  GameRunning = true;
+  IsGameRunning = true;
   CurrentDirection = STOP;
-  SnakeCoordinateX[0] = (width / 2) - 1;
-  SnakeCoordinateY[0] = (height / 2) - 1;
-  AppleCoordinateX = rand() % width;
-  AppleCoordinateY = rand() % height;
+  srand(time(0));
+  SnakeCoordinateX[0] = rand() % (width - 1);
+  SnakeCoordinateY[0] = rand() % (height - 1);
+  AppleCoordinateX = rand() % (width - 1);
+  AppleCoordinateY = rand() % (height - 1);
   CurrentSnakeLen = 1;
 }
 
@@ -54,10 +55,12 @@ void draw() {
         cout << apple;
       } else {
         bool PrintTail = false;
+
         for (int TailIndex = 1; TailIndex < CurrentSnakeLen; ++TailIndex) {
           if (InternalBoundIndex == SnakeCoordinateY[TailIndex] &&
               ColumnIndex == SnakeCoordinateX[TailIndex]) {
             PrintTail = true;
+
             cout << SnakeTail;
           }
         }
@@ -72,6 +75,7 @@ void draw() {
   for (int LowerBoundIndex = 0; LowerBoundIndex <= width; ++LowerBoundIndex) {
     cout << field;
   }
+
   cout << endl;
 }
 
@@ -123,17 +127,17 @@ void logic() {
     ++SnakeCoordinateX[0];
   }
 
-  if (SnakeCoordinateX[0] > width || 
+  if (SnakeCoordinateX[0] > (width - 2) || 
       SnakeCoordinateX[0] < 0 || 
-      SnakeCoordinateY[0] > height || 
+      SnakeCoordinateY[0] > (height - 2) || 
       SnakeCoordinateY[0] < 0) {
-    GameRunning = false;
+    IsGameRunning = false;
   }
 
   for (int SnakeLenIndex = 1; SnakeLenIndex < CurrentSnakeLen; ++SnakeLenIndex) {
     if (SnakeCoordinateX[0] == SnakeCoordinateX[SnakeLenIndex] &&
         SnakeCoordinateY[0] == SnakeCoordinateY[SnakeLenIndex]) {
-      GameRunning = false;
+      IsGameRunning = false;
       continue;
     }
   }
@@ -150,12 +154,12 @@ int main() {
 
   config();
 
-  while (GameRunning) {
-    if ((clock() - time) / CLOCKS_PER_SEC >= 0.25) {
+  while (IsGameRunning) {
+    if ((clock() - time) / CLOCKS_PER_SEC >= 0.3) {
       time = clock();
       input();
-      draw();
       logic();
+      draw();
     }
   }
 
